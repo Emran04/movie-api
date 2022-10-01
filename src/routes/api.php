@@ -17,6 +17,7 @@ use App\Http\Controllers;
 Route::get('/movies', [Controllers\MovieController::class, 'index']);
 
 Route::post('/customer/login', [Controllers\CustomerAuthController::class, 'login'])->name('customer_login');
+Route::post('/customer/register', [Controllers\CustomerAuthController::class, 'register'])->name('customer_register');
 
 Route::group(['middleware' => ['auth:user'], 'prefix' => 'customer', 'as' => 'customer.'], function () {
     Route::get('me', [Controllers\CustomerAuthController::class, 'me'])->name('me');
