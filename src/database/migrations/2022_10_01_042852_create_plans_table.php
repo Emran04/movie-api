@@ -13,15 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('movies', function (Blueprint $table) {
+        Schema::create('plans', function (Blueprint $table) {
             $table->id();
-            $table->string('title', 300);
-            $table->string('poster', 400);
-            $table->year('release_year')->nullable();
-            $table->timestamp('rent_from')->nullable();
-            $table->timestamp('rent_to')->nullable();
-            $table->double('rent_price')->default(0);
-            $table->string('plan', 15)->default('basic');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('type')->default('basic');
+            $table->timestamp('from');
+            $table->timestamp('to');
             $table->timestamps();
         });
     }
@@ -33,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('movies');
+        Schema::dropIfExists('plans');
     }
 };

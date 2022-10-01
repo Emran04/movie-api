@@ -13,15 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('movies', function (Blueprint $table) {
+        Schema::create('actors', function (Blueprint $table) {
             $table->id();
-            $table->string('title', 300);
-            $table->string('poster', 400);
-            $table->year('release_year')->nullable();
-            $table->timestamp('rent_from')->nullable();
-            $table->timestamp('rent_to')->nullable();
-            $table->double('rent_price')->default(0);
-            $table->string('plan', 15)->default('basic');
+            $table->string('name', 200);
+            $table->timestamps();
+        });
+
+        Schema::create('movie_actor', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('movie_id');
+            $table->foreignId('actor_id');
             $table->timestamps();
         });
     }
@@ -33,6 +34,7 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('movies');
+        Schema::dropIfExists('movie_actor');
+        Schema::dropIfExists('actors');
     }
 };

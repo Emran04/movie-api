@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MovieResource;
+use App\Models\Movie;
+use App\Repositories\MovieRepository;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -10,11 +14,14 @@ class MovieController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        $repo = new MovieRepository();
+        $result = $repo->index($request->only('s'));
+
+        return MovieResource::collection($result)->response();
     }
 
     /**

@@ -17,7 +17,13 @@ class MovieFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'title'        => fake()->text(),
+            'poster'       => fake()->imageUrl(),
+            'release_year' => fake()->year(),
+            'rent_from'    => fake()->dateTimeBetween('-5 years', 'now'),
+            'rent_to'      => fake()->dateTimeBetween('now', '5 years'),
+            'rent_price'   => fake()->randomFloat(8, 1, 200),
+            'plan'         => fake()->randomElement(['basic', 'premium']),
         ];
     }
 }
