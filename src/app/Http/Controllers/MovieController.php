@@ -50,8 +50,11 @@ class MovieController extends Controller
     public function importMovie(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'imdb_id' => 'required_without:title|string|max:300',
-            'title'   => 'required_without:imdb_id|string|max:400',
+            'imdb_id'    => 'required_without:title|string|max:300',
+            'title'      => 'required_without:imdb_id|string|max:400',
+            'rent_from'  => 'nullable|date',
+            'rent_to'    => 'nullable|date',
+            'rent_price' => 'nullable|date',
         ]);
 
         if ($validator->fails()) {
@@ -61,19 +64,25 @@ class MovieController extends Controller
             ], 422);
         }
 
-        $omdb = new OMDB();
+        $omdb      = new OMDB();
         $movieData = $omdb->getMovie($request->only(['imdb_id', 'title']));
 
         $collectedData = [
-            'title' => $movieData['Title'] ?? null,
+            'title'        => $movieData['Title'] ?? null,
             'release_year' => $movieData['Year'] ?? null,
-            'poster' => $movieData['Poster'] ?? null,
+            'poster'       => $movieData['Poster'] ?? null,
         ];
+
+        $collectedData = array_merge($collectedData, $request->only([
+            'rent_from',
+            'rent_to',
+            'rent_price'
+        ]));
 
         (new MovieRepository())->store($collectedData);
 
         return new JsonResponse([
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'Movie imported successfully!',
         ]);
     }
