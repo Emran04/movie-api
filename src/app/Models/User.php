@@ -42,6 +42,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    const TYPE_CUSTOMER = 'customer';
+    const TYPE_ADMIN = 'admin';
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
