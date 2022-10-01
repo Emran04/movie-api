@@ -12,8 +12,13 @@ class CustomerAuthController extends Controller
 {
     public function me(Request $request)
     {
+        $customer = $request->user();
+        $plan = $customer->currentPlan();
         return new JsonResponse([
-            'data' => $request->user(),
+            'data' => [
+                'profile' => $customer,
+                'plan' => $plan
+            ],
         ]);
     }
 

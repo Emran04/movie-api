@@ -41,4 +41,26 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function plans()
+    {
+        return $this->hasMany(Plan::class);
+    }
+
+    /**
+     * Get current plan of user
+     *
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function currentPlan()
+    {
+        return $this->plans()
+            ->where('from', '<', now())
+            ->where('to', '>', now())
+            ->orderByDesc('id')
+            ->first();
+    }
 }
