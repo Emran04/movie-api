@@ -1,0 +1,51 @@
+version: "3.8"
+
+networks:
+  app-network:
+    driver: bridge
+
+services:
+  app:
+    build:
+      context: ./src
+      dockerfile: ./../Dockerfile
+    container_name: movie_app
+    restart: unless-stopped
+    tty: true
+    working_dir: /var/www
+    volumes:
+      - ./src:/var/www
+    networks:
+      - app-network
+
+  mysql:
+    image: mysql:8.0.29-oracle
+    container_name: movie_mysql
+    restart: unless-stopped
+    tty: true
+    environment:
+      MYSQL_DATABASE: movie
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_PASSWORD: 123
+      MYSQL_USER: movie
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:1.19.8-alpine
+    container_name: movie_nginx
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 8000:80
+    volumes:
+      - ./src:/var/www
+      - ./nginx/conf:/etc/nginx/conf.d
+    networks:
+      - app-network
