@@ -20,3 +20,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/movies', [Controllers\MovieController::class, 'index']);
+Route::post('/import-movie', [Controllers\MovieController::class, 'importMovie']);
