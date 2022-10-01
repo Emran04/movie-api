@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers;
 
@@ -15,9 +14,14 @@ use App\Http\Controllers;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+Route::get('/movies', [Controllers\MovieController::class, 'index']);
+
+Route::post('/customer/login', [Controllers\CustomerAuthController::class, 'login'])->name('customer_login');
+
+Route::group(['middleware' => ['auth:user'], 'prefix' => 'customer', 'as' => 'customer.'], function () {
+    Route::get('me', [Controllers\CustomerAuthController::class, 'me'])->name('me');
 });
 
-Route::get('/movies', [Controllers\MovieController::class, 'index']);
-Route::post('/import-movie', [Controllers\MovieController::class, 'importMovie']);
+Route::group(['middleware' => ['auth:user', 'isAdmin'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::post('/import-movie', [Controllers\MovieController::class, 'importMovie']);
+});
