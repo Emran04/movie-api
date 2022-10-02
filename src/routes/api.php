@@ -23,6 +23,11 @@ Route::group(['middleware' => ['auth:user'], 'prefix' => 'customer', 'as' => 'cu
     Route::get('me', [Controllers\CustomerAuthController::class, 'me'])->name('me');
 });
 
+Route::group(['middleware' => ['auth:user'], 'prefix' => 'movies', 'as' => 'movies.'], function () {
+    Route::get('/{movie}', [Controllers\MovieController::class, 'show'])->name('show');
+    Route::post('/rent', [Controllers\MovieController::class, 'rent'])->name('me');
+});
+
 Route::group(['middleware' => ['auth:user', 'isAdmin'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::post('/import-movie', [Controllers\MovieController::class, 'importMovie']);
 });

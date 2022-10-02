@@ -76,7 +76,7 @@ class MovieController extends Controller
         $collectedData = array_merge($collectedData, $request->only([
             'rent_from',
             'rent_to',
-            'rent_price'
+            'rent_price',
         ]));
 
         (new MovieRepository())->store($collectedData);
@@ -90,13 +90,14 @@ class MovieController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param int $id
+     * @param \App\Models\Movie $movie
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function show($id)
+    public function show(Movie $movie)
     {
-        //
+        // check if premium user or subscribed to movie
+        return (new MovieResource($movie))->response();
     }
 
     /**
@@ -110,6 +111,34 @@ class MovieController extends Controller
     public function update(Request $request, $id)
     {
         //
+    }
+
+    /**
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse|void
+     */
+    public function rent(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'movie_id' => 'required|integer|exist:movies,id',
+            'days'     => 'required|integer|min:1',
+            'payment'  => 'required|integer|min:0.0001',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->responseValidatorJson($validator);
+        }
+
+        $movie = Movie::find($request->get('movie_id'));
+
+        $customer = $request->user();
+
+        (new MovieRepository())->rent($movie, $customer);
+
+        return new JsonResponse([
+            'message' => 'Success!'
+        ]);
     }
 
     /**

@@ -67,4 +67,9 @@ class User extends Authenticatable
             ->orderByDesc('id')
             ->first();
     }
+
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
 }

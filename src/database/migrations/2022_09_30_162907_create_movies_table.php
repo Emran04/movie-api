@@ -17,6 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('title', 300);
             $table->string('poster', 400);
+            $table->string('imdb_id', 20)->unique();
             $table->year('release_year')->nullable();
             $table->timestamp('rent_from')->nullable();
             $table->timestamp('rent_to')->nullable();
