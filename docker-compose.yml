@@ -49,3 +49,19 @@ services:
       - ./nginx/conf:/etc/nginx/conf.d
     networks:
       - app-network
+
+  mysql_test:
+    image: mysql:8.0.29-oracle
+    container_name: movie_mysql_test
+    restart: unless-stopped
+    tty: true
+    environment:
+      MYSQL_DATABASE: movie_test
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_PASSWORD: 123
+      MYSQL_USER: movie_test
+      SERVICE_TAGS: dev
+    ports:
+      - "3307:3306"
+    networks:
+      - app-network
