@@ -29,5 +29,6 @@ Route::group(['middleware' => ['auth:user'], 'prefix' => 'movies', 'as' => 'movi
 });
 
 Route::group(['middleware' => ['auth:user', 'isAdmin'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::get('/movies', [Controllers\MovieController::class, 'movieList'])->name('movies');
     Route::post('/import-movie', [Controllers\MovieController::class, 'importMovie'])->name('importMovie');
 });

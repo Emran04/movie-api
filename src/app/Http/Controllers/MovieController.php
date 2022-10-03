@@ -8,6 +8,7 @@ use App\Repositories\MovieRepository;
 use App\Services\OMDB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
 class MovieController extends Controller
@@ -137,7 +138,7 @@ class MovieController extends Controller
         (new MovieRepository())->rent($movie, $customer);
 
         return new JsonResponse([
-            'message' => 'Success!'
+            'message' => 'Success!',
         ]);
     }
 
@@ -151,5 +152,30 @@ class MovieController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function movieList(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            's' => 'required|string|min:3|max:300',
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            return Cache::remember('movie_list_' . $request->get('s'), 86400, function() use ($request) {
+                $omdb = new OMDB();
+                return $omdb->getMovieList($request->only(['s']));
+            });
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'message' => 'Failed to fetch data!',
+            ], 422);
+        }
     }
 }
