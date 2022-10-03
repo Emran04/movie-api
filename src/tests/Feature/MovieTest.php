@@ -16,7 +16,7 @@ class MovieTest extends TestCase
     use DatabaseMigrations;
 
     /**
-     * A basic feature test example.
+     * Customer with premium plan can watch premium movie
      *
      * @return void
      */
@@ -42,7 +42,7 @@ class MovieTest extends TestCase
     }
 
     /**
-     * A basic feature test example.
+     * Basic plan customer should not view movie.
      *
      * @return void
      */
@@ -68,7 +68,7 @@ class MovieTest extends TestCase
     }
 
     /**
-     * A basic feature test example.
+     * A customer can watch movie which subscribed by
      *
      * @return void
      */
