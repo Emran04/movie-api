@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
-class CustomerAuthController extends Controller
+class AuthController extends Controller
 {
     /**
      * Customer profile
@@ -47,14 +47,17 @@ class CustomerAuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email'    => 'required|email',
             'password' => 'required|string|max:15',
+            'type'     => 'required|string|in:' . implode(',', array_keys(User::TYPES)),
         ]);
 
         if ($validator->fails()) {
             return $this->responseValidatorJson($validator);
         }
 
+        $userType = $request->get('type');
+
         $user = User::query()
-            ->where('type', User::TYPE_CUSTOMER)
+            ->where('type', $userType)
             ->where('email', $request->get('email'))
             ->first();
 
@@ -70,7 +73,7 @@ class CustomerAuthController extends Controller
             ], 422);
         }
 
-        $plan = $user->currentPlan();
+        $plan = $userType === User::TYPE_CUSTOMER ? $user->currentPlan() : null;
 
         return new JsonResponse([
             'user'  => $user,

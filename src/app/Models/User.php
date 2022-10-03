@@ -44,7 +44,12 @@ class User extends Authenticatable
     ];
 
     const TYPE_CUSTOMER = 'customer';
-    const TYPE_ADMIN = 'admin';
+    const TYPE_ADMIN    = 'admin';
+
+    const TYPES = [
+        self::TYPE_CUSTOMER => 'Customer',
+        self::TYPE_ADMIN    => 'Admin',
+    ];
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
