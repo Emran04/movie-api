@@ -18,4 +18,9 @@ class Movie extends Model
         self::PLAN_BASIC   => 'Basic',
         self::PLAN_PREMIUM => 'Premium',
     ];
+
+    public function actors()
+    {
+        return $this->hasMany(MovieActor::class);
+    }
 }

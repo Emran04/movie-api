@@ -3,7 +3,9 @@
 namespace App\Repositories;
 
 use App\Exceptions\ValidationException;
+use App\Models\Actor;
 use App\Models\Movie;
+use App\Models\MovieActor;
 use App\Models\User;
 use Illuminate\Support\Arr;
 
@@ -27,9 +29,9 @@ class MovieRepository
      *
      * @param array $attrs
      *
-     * @return mixed
+     * @return void
      */
-    public function store(array $attrs)
+    public function store(array $attrs): void
     {
         $allowedAttrs = Arr::only($attrs, [
             'title',
@@ -41,7 +43,21 @@ class MovieRepository
             'plan',
         ]);
 
-        return Movie::create($allowedAttrs);
+        $movie = Movie::create($allowedAttrs);
+
+        if (isset($attrs['actors'])) {
+            $actorList = explode(', ', $attrs['actors']);
+            foreach ($actorList as $value) {
+                $actor = Actor::where('name', $value)->orderByDesc('id')->first();
+                if (!$actor) {
+                    $actor = Actor::create(['name' => $value]);
+                }
+                MovieActor::create([
+                    'movie_id' => $movie->id,
+                    'actor_id' => $actor->id
+                ]);
+            }
+        }
     }
 
     /**

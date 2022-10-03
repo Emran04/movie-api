@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ValidationException;
 use App\Http\Resources\MovieResource;
 use App\Models\Movie;
 use App\Models\Plan;
@@ -11,6 +12,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class MovieController extends Controller
@@ -60,6 +63,7 @@ class MovieController extends Controller
             'title'        => $movieData['Title'] ?? null,
             'release_year' => $movieData['Year'] ?? null,
             'poster'       => $movieData['Poster'] ?? null,
+            'actors'       => $movieData['Actors'] ?? null,
         ];
 
         $collectedData = array_merge($collectedData, $request->only([
@@ -69,12 +73,20 @@ class MovieController extends Controller
             'plan',
         ]));
 
-        (new MovieRepository())->store($collectedData);
-
-        return new JsonResponse([
-            'status'  => 'success',
-            'message' => 'Movie imported successfully!',
-        ]);
+        DB::beginTransaction();
+        try {
+            (new MovieRepository())->store($collectedData);
+            DB::commit();
+            return new JsonResponse([
+                'status'  => 'success',
+                'message' => 'Movie imported successfully!',
+            ]);
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status'  => 'failed',
+                'message' => 'Failed to import movie!',
+            ], 422);
+        }
     }
 
     /**
@@ -90,7 +102,6 @@ class MovieController extends Controller
         $customer = Auth::user();
 
         if ($movie->plan === Movie::PLAN_PREMIUM) {
-            //TODO: Check the movie have validity
 
             // check user have premium plan
             // Or have subscription of the movie
@@ -108,6 +119,8 @@ class MovieController extends Controller
                 }
             }
         }
+
+        $movie->load('actors.actor');
 
         return (new MovieResource($movie))->response();
     }
@@ -133,7 +146,7 @@ class MovieController extends Controller
     public function rent(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'movie_id' => 'required|integer|exist:movies,id',
+            'movie_id' => 'required|integer|exists:movies,id',
             'days'     => 'required|integer|min:1',
             'payment'  => 'required|numeric|min:0',
         ]);
@@ -146,11 +159,24 @@ class MovieController extends Controller
 
         $customer = $request->user();
 
-        (new MovieRepository())->rent($movie, $customer);
+        try {
+            (new MovieRepository())->rent($movie, $customer, $request->only(['days']));
 
-        return new JsonResponse([
-            'message' => 'Success!',
-        ]);
+            return new JsonResponse([
+                'message' => 'Success!',
+            ]);
+        } catch (\Exception $e) {
+            $message = 'Failed to rent!';
+            if ($e instanceof ValidationException) {
+                $message = $e->getMessage();
+            } else {
+                Log::error($e->getMessage(), $e->getTrace());
+            }
+
+            return new JsonResponse([
+                'message' => $message,
+            ], 422);
+        }
     }
 
     /**
