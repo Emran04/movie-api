@@ -10,4 +10,12 @@ class Movie extends Model
     use HasFactory;
 
     protected $guarded = [];
+
+    const PLAN_BASIC   = 'basic';
+    const PLAN_PREMIUM = 'premium';
+
+    const PLANS = [
+        self::PLAN_BASIC   => 'Basic',
+        self::PLAN_PREMIUM => 'Premium',
+    ];
 }

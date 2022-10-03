@@ -51,11 +51,11 @@ class MovieController extends Controller
     public function importMovie(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'imdb_id'    => 'required_without:title|string|max:300',
-            'title'      => 'required_without:imdb_id|string|max:400',
+            'imdb_id'    => 'required|string|max:300',
             'rent_from'  => 'nullable|date',
             'rent_to'    => 'nullable|date',
-            'rent_price' => 'nullable|date',
+            'rent_price' => 'required|numeric|min:0',
+            'plan'       => 'required|string|in:' . implode(',', array_keys(Movie::PLANS)),
         ]);
 
         if ($validator->fails()) {
@@ -66,7 +66,7 @@ class MovieController extends Controller
         }
 
         $omdb      = new OMDB();
-        $movieData = $omdb->getMovie($request->only(['imdb_id', 'title']));
+        $movieData = $omdb->getMovie(['i' => $request->get('imdb_id')]);
 
         $collectedData = [
             'title'        => $movieData['Title'] ?? null,
@@ -168,8 +168,9 @@ class MovieController extends Controller
         }
 
         try {
-            return Cache::remember('movie_list_' . $request->get('s'), 86400, function() use ($request) {
+            return Cache::remember('movie_list_' . $request->get('s'), 86400, function () use ($request) {
                 $omdb = new OMDB();
+
                 return $omdb->getMovieList($request->only(['s']));
             });
         } catch (\Exception $e) {
