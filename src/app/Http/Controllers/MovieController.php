@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\MovieResource;
 use App\Models\Movie;
+use App\Models\Plan;
 use App\Repositories\MovieRepository;
 use App\Services\OMDB;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 
@@ -24,20 +26,6 @@ class MovieController extends Controller
         $result = $repo->index($request->only('s'));
 
         return MovieResource::collection($result)->response();
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-
-        ]);
     }
 
     /**
@@ -78,6 +66,7 @@ class MovieController extends Controller
             'rent_from',
             'rent_to',
             'rent_price',
+            'plan',
         ]));
 
         (new MovieRepository())->store($collectedData);
@@ -98,6 +87,28 @@ class MovieController extends Controller
     public function show(Movie $movie)
     {
         // check if premium user or subscribed to movie
+        $customer = Auth::user();
+
+        if ($movie->plan === Movie::PLAN_PREMIUM) {
+            //TODO: Check the movie have validity
+
+            // check user have premium plan
+            // Or have subscription of the movie
+            $currentPlan = $customer->currentPlan();
+            if (!$currentPlan || $currentPlan?->type !== Plan::TYPE_PREMIUM) {
+                $subscribed = $customer->subscriptions()->where('movie_id', $movie->id)
+                    ->where('from', '<', now())
+                    ->where('to', '>', now())
+                    ->exists();
+
+                if (!$subscribed) {
+                    return new JsonResponse([
+                        'message' => 'Please subscribe to watch!'
+                    ], 403);
+                }
+            }
+        }
+
         return (new MovieResource($movie))->response();
     }
 
@@ -124,7 +135,7 @@ class MovieController extends Controller
         $validator = Validator::make($request->all(), [
             'movie_id' => 'required|integer|exist:movies,id',
             'days'     => 'required|integer|min:1',
-            'payment'  => 'required|integer|min:0.0001',
+            'payment'  => 'required|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
