@@ -37,3 +37,11 @@ Admin user:
 Email: admin@app.com
 Password: password
 ```
+- Firstly we need to have login as admin `http://localhost:3000/admin-login`
+- Then need to go to admin movie serach from OMDB api `http://localhost:3000/admin-movies` by clicking Admin movies from menu
+- After search with movie title click on import movie, we can put necessary data and submit the form.
+- After import the movie will available in customers homepage.
+- Then logout admin
+- To view movie details we need to log in as customer `http://localhost:3000/customer-login`
+- Go to details of a premium movie click subscribe button and fill the form for rent the movie.
+- No need to subscribe premium movie for premium customer to watch the movie.
