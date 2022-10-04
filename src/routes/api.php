@@ -30,5 +30,7 @@ Route::group(['middleware' => ['auth:user'], 'prefix' => 'movies', 'as' => 'movi
 
 Route::group(['middleware' => ['auth:user', 'isAdmin'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::get('/movies', [Controllers\MovieController::class, 'movieList'])->name('movies');
+    Route::put('/movies/{movie}', [Controllers\MovieController::class, 'update'])->name('update');
+    Route::delete('/movies/{movie}', [Controllers\MovieController::class, 'destroy'])->name('destroy');
     Route::post('/import-movie', [Controllers\MovieController::class, 'importMovie'])->name('importMovie');
 });

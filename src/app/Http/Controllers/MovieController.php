@@ -77,6 +77,7 @@ class MovieController extends Controller
         try {
             (new MovieRepository())->store($collectedData);
             DB::commit();
+
             return new JsonResponse([
                 'status'  => 'success',
                 'message' => 'Movie imported successfully!',
@@ -102,7 +103,6 @@ class MovieController extends Controller
         $customer = Auth::user();
 
         if ($movie->plan === Movie::PLAN_PREMIUM) {
-
             // check user have premium plan
             // Or have subscription of the movie
             $currentPlan = $customer->currentPlan();
@@ -114,7 +114,7 @@ class MovieController extends Controller
 
                 if (!$subscribed) {
                     return new JsonResponse([
-                        'message' => 'Please subscribe to watch!'
+                        'message' => 'Please subscribe to watch!',
                     ], 403);
                 }
             }
@@ -129,13 +129,45 @@ class MovieController extends Controller
      * Update the specified resource in storage.
      *
      * @param \Illuminate\Http\Request $request
-     * @param int $id
+     * @param \App\Models\Movie $movie
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, Movie $movie)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'title'        => 'sometimes|required|string|max:300',
+            'poster'       => 'sometimes|required|string|max:300',
+            'release_year' => 'nullable|date',
+            'rent_from'    => 'nullable|date',
+            'rent_to'      => 'nullable|date',
+            'rent_price'   => 'sometimes|required|numeric|min:0',
+            'plan'         => 'sometimes|required|string|in:' . implode(',', array_keys(Movie::PLANS)),
+        ]);
+
+        if ($validator->fails()) {
+            return new JsonResponse([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $movie->fill($request->only([
+            'title',
+            'poster',
+            'release_year',
+            'rent_from',
+            'rent_to',
+            'rent_price',
+            'plan',
+        ]));
+
+        $movie->save();
+
+        return new JsonResponse([
+            'message' => 'Updated successfully!',
+            'data'    => $movie,
+        ]);
     }
 
     /**
@@ -182,15 +214,26 @@ class MovieController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param int $id
+     * @param \App\Models\Movie $movie
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($id)
+    public function destroy(Movie $movie)
     {
-        //
+        $movie->delete();
+
+        return new JsonResponse([
+            'message' => 'Deleted successfully!',
+        ]);
     }
 
+    /**
+     * Get movie list from OMDB api
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
     public function movieList(Request $request)
     {
         $validator = Validator::make($request->all(), [
